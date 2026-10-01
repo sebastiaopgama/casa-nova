@@ -46,13 +46,23 @@ só deixam entrar a conta partilhada.
 2. Cola-os em `config.js`. Estes valores não são secretos.
    **Nunca** uses a `service_role` / secret key na página.
 
-## 5. Publicar o site (grátis)
-Qualquer alojamento estático serve. Todos dão um endereço grátis com HTTPS:
-- **Netlify**: arrasta a pasta para https://app.netlify.com/drop → `nome-que-escolheres.netlify.app`
-- **Cloudflare Pages**: Workers & Pages > Create > Pages > Upload assets → `nome.pages.dev`
-- **GitHub Pages**: repositório com os ficheiros e Pages ativo → `utilizador.github.io/casa-nova`
+## 5. Publicação (GitHub Pages) e domínio
+- Código: https://github.com/sebastiaopgama/casa-nova (público; não tem a palavra-passe nem dados da lista).
+- Cada `git push` para o ramo `main` publica o site sozinho, em 1 a 2 minutos.
+- Endereço do GitHub: https://sebastiaopgama.github.io/casa-nova/
+- Domínio próprio: **mscasanova.pt** (registado na amen.pt). Na zona DNS do domínio, no painel da amen.pt,
+  apaga os registos A/CNAME que existam para `@` e `www` e cria estes:
 
-Um domínio próprio (ex.: `casanova.pt`) custa cerca de 10–15 € por ano e liga-se depois ao mesmo alojamento.
+  | Tipo  | Nome | Valor                    |
+  |-------|------|--------------------------|
+  | A     | @    | 185.199.108.153          |
+  | A     | @    | 185.199.109.153          |
+  | A     | @    | 185.199.110.153          |
+  | A     | @    | 185.199.111.153          |
+  | CNAME | www  | sebastiaopgama.github.io |
+
+  Depois, no repositório: ficheiro `CNAME` na raiz com `mscasanova.pt` (ou **Settings > Pages > Custom domain**)
+  e, quando o certificado estiver pronto, **Enforce HTTPS**.
 
 > No plano Free, o Supabase **pausa o projeto ao fim de 7 dias sem uso**. Se a app ficar uma semana
 > sem ser aberta, entra no painel do Supabase e carrega em **Restore project** (os dados não se perdem).
