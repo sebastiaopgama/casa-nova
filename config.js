@@ -4,7 +4,7 @@
    Com SUPABASE_URL vazio, a página guarda tudo só neste navegador (modo de teste, sem palavra-passe). */
 window.CASA_CONFIG = {
   SUPABASE_URL: "https://qavkmwhehdjarcoccbgi.supabase.co",
-  SUPABASE_ANON_KEY: "",  // ex.: "eyJhbGciOi..." ou "sb_publishable_..."
+  SUPABASE_ANON_KEY: "sb_publishable_kNqHfaWIjky0VrTTDh-NeA_iRgv6ojK", // chave pública ("publishable")
 
   // Conta única, partilhada pelos dois. Cria-a no Supabase com este email e a vossa palavra-passe.
   // O email não precisa de existir (ninguém recebe emails nele).

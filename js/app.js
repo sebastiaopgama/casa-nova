@@ -1228,7 +1228,8 @@ function loginError(message) {
   $("#loginErr").hidden = !message;
 }
 
-const signOut = () => Store.sb.auth.signOut().finally(() => location.reload());
+// A conta é partilhada: sair só neste aparelho (o "global" do Supabase tirava a sessão aos dois).
+const signOut = () => Store.sb.auth.signOut({ scope: "local" }).finally(() => location.reload());
 
 async function startSupabase(config) {
   showLogin("loading");
