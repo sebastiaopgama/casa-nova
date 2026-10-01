@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Casa Nova</title>
+  <meta name="description" content="A lista de compras da casa nova, divisão a divisão.">
+  <meta name="theme-color" content="#F4EFE7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#141210" media="(prefers-color-scheme: dark)">
+  <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
+
+  <!-- Instalar no ecrã principal (iPhone e Android) -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Casa Nova">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%231F2D26'/><path d='M18 31 32 19l14 12v14a2 2 0 0 1-2 2h-8v-9h-8v9h-8a2 2 0 0 1-2-2z' fill='%23CBDDB9'/></svg>">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Manrope:wght@400..800&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script>
+    /* aplica o tema escolhido antes de desenhar, para não piscar */
+    try { var t = localStorage.getItem("casa.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}
+  </script>
+  <script src="config.js" defer></script>
+  <script src="js/icons.js" defer></script>
+  <script src="js/store.js" defer></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+
+  <main class="app">
+
+    <!-- ===================== CASA ===================== -->
+    <section class="view" id="viewHome" aria-labelledby="appTitle">
+      <header class="topbar">
+        <div class="brand">
+          <h1 id="appTitle">Casa <em>Nova</em></h1>
+          <p id="homeSub" hidden></p>
+        </div>
+        <div class="topbar-actions">
+          <span class="sync" id="sync" hidden><i></i><span>A ligar…</span></span>
+          <button class="icon-btn" type="button" id="btnMenu" aria-label="Mais opções" aria-haspopup="menu" aria-expanded="false">
+            <svg class="i" aria-hidden="true"><use href="#i-more"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="install" id="installHint" hidden>
+        <span class="install-icon"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg></span>
+        <p>Para usar como app, toca em <b>Partilhar</b> <svg class="i i-inline" aria-hidden="true"><use href="#i-share"/></svg> e depois em <b>Adicionar ao ecrã principal</b>.</p>
+        <button class="icon-btn icon-btn--sm" type="button" id="installClose" aria-label="Fechar aviso">
+          <svg class="i" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+
+      <div class="banner" id="migrate" hidden>
+        <p id="migrateTxt"></p>
+        <div class="banner-actions">
+          <button class="btn btn-ghost btn-sm" type="button" id="migrateNo">Agora não</button>
+          <button class="btn btn-primary btn-sm" type="button" id="migrateYes">Passar para a lista</button>
+        </div>
+      </div>
+
+      <section class="hero" id="hero" aria-label="Resumo do orçamento"></section>
+
+      <div class="toolbar">
+        <div class="search">
+          <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+          <input id="q" type="search" placeholder="Procurar em toda a casa…" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Procurar itens" enterkeyhint="search">
+          <button class="search-clear" type="button" id="qClear" aria-label="Limpar pesquisa" hidden>
+            <svg class="i" aria-hidden="true"><use href="#i-x"/></svg>
+          </button>
+        </div>
+        <div class="chips" id="chips" role="group" aria-label="Mostrar">
+          <button class="chip" type="button" data-f="rooms" aria-pressed="true"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg>Divisões</button>
+          <button class="chip" type="button" data-f="todo" aria-pressed="false">Por comprar <span class="count num"></span></button>
+          <button class="chip" type="button" data-f="essential" aria-pressed="false">Essenciais <span class="count num"></span></button>
+          <button class="chip" type="button" data-f="done" aria-pressed="false">Já comprados <span class="count num"></span></button>
+          <button class="chip" type="button" data-f="all" aria-pressed="false">Todos <span class="count num"></span></button>
+        </div>
+      </div>
+
+      <div class="home-content" id="homeContent"></div>
+      <p class="foot-note" id="footNote"></p>
+    </section>
+
+    <!-- ===================== DIVISÃO ===================== -->
+    <section class="view view--narrow" id="viewRoom" hidden>
+      <header class="topbar topbar--sticky" id="roomBar">
+        <button class="back" type="button" id="btnBack">
+          <svg class="i" aria-hidden="true"><use href="#i-chevronLeft"/></svg>Casa
+        </button>
+        <span class="topbar-title" id="roomBarTitle" aria-hidden="true"></span>
+        <button class="icon-btn" type="button" id="btnRoomMenu" aria-label="Opções da divisão" aria-haspopup="menu" aria-expanded="false">
+          <svg class="i" aria-hidden="true"><use href="#i-more"/></svg>
+        </button>
+      </header>
+
+      <div id="roomHero"></div>
+
+      <form class="quick-add" id="quickAdd" autocomplete="off">
+        <svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>
+        <input id="quickInput" maxlength="200" placeholder="Adicionar, ex.: 2x Toalhas 15€" aria-label="Adicionar item rapidamente (ex.: 2x Toalhas 15€)" enterkeyhint="done">
+        <button class="quick-btn" type="submit" aria-label="Adicionar"><svg class="i" aria-hidden="true"><use href="#i-arrowUp"/></svg></button>
+      </form>
+
+      <div class="stack" id="roomList"></div>
+    </section>
+
+  </main>
+
+  <button class="fab" type="button" id="fab">
+    <svg class="i" aria-hidden="true"><use href="#i-plus"/></svg><span>Adicionar</span>
+  </button>
+  <input type="file" id="fileImport" accept=".xlsx,.xls,.csv" hidden>
+
+  <!-- ===================== FOLHA DO ITEM ===================== -->
+  <div class="overlay" id="itemSheet" hidden>
+    <form class="sheet" id="itemForm" novalidate role="dialog" aria-modal="true" aria-labelledby="itemTitle" tabindex="-1">
+      <header class="sheet-head">
+        <h2 id="itemTitle">Novo item</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Fechar">
+          <svg class="i" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </header>
+
+      <div class="sheet-body">
+        <div class="field">
+          <label for="fNome">O que é preciso?</label>
+          <input class="input input--lg" id="fNome" maxlength="200" placeholder="ex.: Faca de chef 20 cm" autocomplete="off" required>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="fDiv">Divisão</label>
+            <select class="input" id="fDiv"></select>
+          </div>
+          <div class="field">
+            <label for="fCat">Categoria <span class="opt">opcional</span></label>
+            <input class="input" id="fCat" list="catList" maxlength="60" placeholder="ex.: Loiça" autocomplete="off">
+            <datalist id="catList"></datalist>
+          </div>
+        </div>
+
+        <div class="field" id="newDivField" hidden>
+          <label for="fNewDiv">Nome da nova divisão</label>
+          <input class="input" id="fNewDiv" maxlength="80" placeholder="ex.: Escritório" autocomplete="off" autocapitalize="words">
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="fPreco">Preço unitário</label>
+            <div class="affix">
+              <input class="input" id="fPreco" inputmode="decimal" placeholder="0,00" autocomplete="off">
+              <span>€</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="fQtd">Quantidade</label>
+            <div class="stepper">
+              <button type="button" data-step="-1" aria-label="Menos um"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
+              <input id="fQtd" inputmode="numeric" pattern="[0-9]*" value="1" autocomplete="off">
+              <button type="button" data-step="1" aria-label="Mais um"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <p class="total-line" id="fTotal" hidden><span>Total previsto</span><b class="num" id="fTotalVal"></b></p>
+
+        <div class="field">
+          <span class="field-label" id="lblEstado">Estado</span>
+          <div class="seg" id="fEstado" role="group" aria-labelledby="lblEstado">
+            <button type="button" data-v="0"><i class="dot"></i>Por comprar</button>
+            <button type="button" data-v="1"><i class="dot"></i>Comprado</button>
+            <button type="button" data-v="2"><i class="dot"></i>Feito</button>
+          </div>
+        </div>
+
+        <div class="field" id="pagoField" hidden>
+          <label for="fPago">Quanto pagaram <span class="opt">total, opcional</span></label>
+          <div class="affix">
+            <input class="input" id="fPago" inputmode="decimal" placeholder="Se ficar vazio, conta o previsto" autocomplete="off">
+            <span>€</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label" id="lblPrio">Prioridade</span>
+          <div class="seg" id="fPrio" role="group" aria-labelledby="lblPrio">
+            <button type="button" data-v="E">Essencial</button>
+            <button type="button" data-v="I">Importante</button>
+            <button type="button" data-v="D">Pode esperar</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">Links <span class="opt">onde ver ou comprar</span></span>
+          <div class="links-edit" id="fLinks"></div>
+          <button class="add-link" type="button" id="fAddLink">
+            <svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Adicionar link
+          </button>
+        </div>
+
+        <div class="field">
+          <label for="fNotas">Notas <span class="opt">opcional</span></label>
+          <textarea class="input" id="fNotas" rows="3" placeholder="Modelo, cor, medidas…"></textarea>
+        </div>
+
+        <p class="stamp" id="fStamp" hidden></p>
+        <p class="err" id="fErr" role="alert" hidden></p>
+      </div>
+
+      <footer class="sheet-foot">
+        <button class="btn btn-primary grow" type="submit" id="fSave">Guardar</button>
+        <button class="btn btn-ghost first" type="submit" id="fSaveMore">Guardar e novo</button>
+        <button class="btn btn-danger-ghost first" type="button" id="fDelete">
+          <svg class="i" aria-hidden="true"><use href="#i-trash"/></svg>Apagar
+        </button>
+      </footer>
+    </form>
+  </div>
+
+  <!-- ===================== DIÁLOGO ===================== -->
+  <div class="overlay overlay--center" id="dialog" hidden>
+    <form class="dialog" id="dlgForm" novalidate role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+      <h2 id="dlgTitle"></h2>
+      <p class="dialog-text" id="dlgText"></p>
+      <div class="field" id="dlgField">
+        <label for="dlgInput" id="dlgLabel"></label>
+        <input class="input" id="dlgInput" autocomplete="off">
+      </div>
+      <p class="err" id="dlgErr" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" type="button" data-close>Cancelar</button>
+        <button class="btn btn-primary" type="submit" id="dlgOk">Guardar</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="menu" id="menu" role="menu" hidden></div>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- ===================== ENTRADA COM PALAVRA-PASSE (só com Supabase) ===================== -->
+  <div class="login" id="login" hidden>
+    <div class="login-card">
+      <img class="login-logo" src="icons/icon-192.png" alt="" width="76" height="76">
+      <h1>Casa <em>Nova</em></h1>
+
+      <form class="login-body" id="loginForm" novalidate hidden>
+        <p>Esta lista é privada. Escreve a palavra-passe para entrar.</p>
+        <!-- campo invisível: ajuda o iPhone a guardar a palavra-passe no Porta-chaves -->
+        <input class="sr-only" type="text" id="loginUser" autocomplete="username" tabindex="-1" aria-hidden="true" readonly>
+        <div class="password">
+          <input class="input input--lg" id="loginPass" type="password" autocomplete="current-password" placeholder="Palavra-passe"
+            aria-label="Palavra-passe" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go">
+          <button class="password-toggle" type="button" id="togglePass" aria-label="Mostrar palavra-passe" aria-pressed="false">
+            <svg class="i" aria-hidden="true"><use href="#i-eye"/></svg>
+          </button>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit" id="btnLogin">Entrar</button>
+        <p class="err" id="loginErr" role="alert" hidden></p>
+      </form>
+
+      <div class="login-body" id="loginDenied" hidden>
+        <p>Esta conta não tem acesso à lista.</p>
+        <button class="btn btn-ghost btn-block" type="button" id="btnDeniedOut">Sair</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

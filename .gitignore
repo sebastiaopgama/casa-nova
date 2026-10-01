@@ -1,0 +1,15 @@
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores e ferramentas
+.vscode/
+.idea/
+.claude/
+node_modules/
+
+# Nunca guardar segredos (chave service_role do Supabase, palavras-passe, etc.)
+.env
+.env.*
+*.local
