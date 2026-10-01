@@ -50,16 +50,20 @@ só deixam entrar a conta partilhada.
 - Código: https://github.com/sebastiaopgama/casa-nova (público; não tem a palavra-passe nem dados da lista).
 - Cada `git push` para o ramo `main` publica o site sozinho, em 1 a 2 minutos.
 - Endereço do GitHub: https://sebastiaopgama.github.io/casa-nova/
-- Domínio próprio: **mscasanova.pt** (registado na amen.pt). Na zona DNS do domínio, no painel da amen.pt,
-  apaga os registos A/CNAME que existam para `@` e `www` e cria estes:
+- Domínio próprio: **mscasanova.pt** (registado na amen.pt). No painel da amen.pt:
+  **OS SEUS PRODUTOS > mscasanova.pt > DOMÍNIO & DNS > Configuração DNS > Gestão Avançada**
+  (não usar "Modificar servidores DNS"). Os registos devem ficar assim, e no fim carrega-se em **Aplicar**:
 
-  | Tipo  | Nome | Valor                    |
-  |-------|------|--------------------------|
-  | A     | @    | 185.199.108.153          |
-  | A     | @    | 185.199.109.153          |
-  | A     | @    | 185.199.110.153          |
-  | A     | @    | 185.199.111.153          |
-  | CNAME | www  | sebastiaopgama.github.io |
+  | Nome          | Tipo  | Valor                    |
+  |---------------|-------|--------------------------|
+  | mscasanova.pt | A     | 185.199.108.153          |
+  | mscasanova.pt | A     | 185.199.109.153          |
+  | mscasanova.pt | A     | 185.199.110.153          |
+  | mscasanova.pt | A     | 185.199.111.153          |
+  | www           | CNAME | sebastiaopgama.github.io |
+
+  Qualquer outro registo A do `www` tem de ser apagado (um nome não pode ter A e CNAME ao mesmo tempo).
+  Os registos MX/TXT de email ficam como estão.
 
   Depois, no repositório: ficheiro `CNAME` na raiz com `mscasanova.pt` (ou **Settings > Pages > Custom domain**)
   e, quando o certificado estiver pronto, **Enforce HTTPS**.
