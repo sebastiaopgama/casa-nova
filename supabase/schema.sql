@@ -41,11 +41,16 @@ create table if not exists public.itens (
   prio          char(1) not null default 'I' check (prio in ('E','I','D')),
   links         text[] not null default '{}',
   notas         text not null default '',
+  sugerido      boolean not null default false,                             -- veio das sugestões e ninguém lhe mexeu
   criado_em     timestamptz not null default now(),
   atualizado_em timestamptz not null default now(),
   atualizado_por text default (auth.jwt() ->> 'email')
 );
 create index if not exists itens_divisao_idx on public.itens (divisao);
+
+-- Sugestões: só podem existir uma vez (o servidor recusa repetidas, mesmo com dois telemóveis ao mesmo tempo).
+alter table public.itens add column if not exists sugerido boolean not null default false;
+create unique index if not exists itens_sugerido_unico on public.itens (divisao, nome) where sugerido;
 
 create or replace function public.tocar_item()
 returns trigger

@@ -7,7 +7,7 @@
 "use strict";
 
 const DEFAULT_ROOMS = ["Entrada", "Sala de Estar", "Sala de Jantar", "Cozinha", "Quarto Principal", "Quarto 2", "Casa de Banho", "Geral"];
-const ITEM_FIELDS = ["nome", "divisao", "categoria", "preco", "qtd", "preco_pago", "estado", "prio", "links", "notas"];
+const ITEM_FIELDS = ["nome", "divisao", "categoria", "preco", "qtd", "preco_pago", "estado", "prio", "links", "notas", "sugerido"];
 
 /* Nome de divisão com cada palavra em maiúscula, exceto as de ligação: "casa de banho" → "Casa de Banho". */
 const ROOM_SMALL_WORDS = new Set(["a", "à", "ao", "aos", "as", "às", "com", "da", "das", "de", "do", "dos", "e", "em", "na", "nas", "no", "nos", "o", "os", "ou", "para", "pela", "pelo", "por", "sem"]);
@@ -59,6 +59,7 @@ function normalizeItem(raw) {
     prio: ["E", "I", "D"].includes(raw.prio) ? raw.prio : "I",
     links: Array.isArray(raw.links) ? raw.links.filter(Boolean) : [],
     notas: String(raw.notas ?? "").trim(),
+    sugerido: raw.sugerido === true, // veio das sugestões e ainda ninguém lhe mexeu
   };
 }
 
@@ -197,6 +198,17 @@ const Store = {
       if (error) throw error;
     }
     this.drop(id);
+    this.emit();
+  },
+
+  async removeItems(ids) {
+    if (!ids.length) return;
+    if (this.sb) {
+      const { error } = await this.sb.from("itens").delete().in("id", ids);
+      if (error) throw error;
+    }
+    const gone = new Set(ids);
+    this.items = this.items.filter(it => !gone.has(it.id));
     this.emit();
   },
 

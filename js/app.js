@@ -400,6 +400,7 @@ function itemHTML(it, { showCat = false } = {}) {
   const tags = [];
   if (it.estado === 2) tags.push(`<span class="tag tag-made">Feito</span>`);
   if (!done && it.prio !== "I") tags.push(`<span class="tag tag-${it.prio}">${PRIOS[it.prio]}</span>`);
+  if (it.sugerido) tags.push(`<span class="tag tag-sug">Sugestão</span>`);
   const meta = info.length || tags.length
     ? `<span class="item-meta">${info.length ? `<span>${info.join(" · ")}</span>` : ""}${tags.join("")}</span>`
     : "";
@@ -840,6 +841,7 @@ async function submitItemForm(e) {
     prio: form.prio,
     links: links.map(safeUrl),
     notas: $("#fNotas").value.trim(),
+    sugerido: false, // editada, uma sugestão passa a ser vossa
   };
   const isNew = !form.editing;
 
@@ -866,7 +868,8 @@ async function submitItemForm(e) {
 async function toggleItem(id) {
   const it = Store.find(id);
   if (!it) return;
-  const saving = Store.saveItem({ ...it, estado: it.estado === 0 ? 1 : 0 }); // desenha logo, antes de confirmar
+  // desenha logo, antes de confirmar; ao mexer numa sugestão, ela passa a ser vossa
+  const saving = Store.saveItem({ ...it, estado: it.estado === 0 ? 1 : 0, sugerido: false });
   $(`[data-toggle="${CSS.escape(id)}"]`)?.classList.add("pop");
   try {
     await saving;
@@ -1040,12 +1043,59 @@ const SUGESTOES = {
   "Geral": [["Aspirador", "Limpeza", "E"], ["Esfregona e balde", "Limpeza", "E"], ["Vassoura e pá", "Limpeza", "E"], ["Máquina de lavar roupa", "Eletrodomésticos", "E"], ["Estendal", "Roupa", "E"], ["Ferro e tábua de engomar", "Roupa", "I"], ["Caixa de ferramentas", "Ferramentas", "I"], ["Lâmpadas", "Eletricidade", "E"], ["Extensões e triplas", "Eletricidade", "I"], ["Detetor de fumo", "Segurança", "I"], ["Kit de primeiros socorros", "Segurança", "I"]],
 };
 
+/* As sugestões ficam marcadas (sugerido) até alguém lhes mexer. Só entram uma vez:
+   a app não as volta a pôr enquanto houver alguma, e o Supabase recusa repetidas
+   (mesmo que os dois telemóveis carreguem ao mesmo tempo). */
+const sameItemKey = (nome, divisao) => `${fold(divisao)}|${fold(nome)}`;
+let addingSuggestions = false;
+
 async function useSuggestions() {
-  const rows = Object.entries(SUGESTOES).flatMap(([divisao, list]) =>
-    list.map(([nome, categoria, prio, qtd = 1]) => ({ nome, divisao, categoria, prio, qtd, preco: 0, estado: 0, preco_pago: null, links: [], notas: "" }))
-  );
+  if (addingSuggestions) return; // dois toques seguidos
+  if (Store.items.some(it => it.sugerido)) {
+    toast("As sugestões já estão na lista");
+    return;
+  }
+  const existing = new Set(Store.items.map(it => sameItemKey(it.nome, it.divisao)));
+  const rows = Object.entries(SUGESTOES)
+    .flatMap(([divisao, list]) =>
+      list.map(([nome, categoria, prio, qtd = 1]) => ({ nome, divisao, categoria, prio, qtd, preco: 0, estado: 0, preco_pago: null, links: [], notas: "", sugerido: true }))
+    )
+    .filter(r => !existing.has(sameItemKey(r.nome, findRoom(r.divisao) || r.divisao))); // não repete o que já puseram à mão
+  if (!rows.length) {
+    toast("Já têm na lista todos os itens sugeridos");
+    return;
+  }
+  addingSuggestions = true;
   try {
-    await importRows(rows, n => `${n} sugestões adicionadas`);
+    await importRows(rows, n => `${plural(n, "sugestão adicionada", "sugestões adicionadas")}`);
+  } catch (err) {
+    if (err?.code === "23505") {
+      toast("As sugestões já tinham sido adicionadas no outro telemóvel");
+      Store.loadRemote().catch(() => {});
+    } else {
+      toast(errMsg(err));
+    }
+  } finally {
+    addingSuggestions = false;
+  }
+}
+
+async function deleteSuggestions() {
+  const list = Store.items.filter(it => it.sugerido);
+  if (!list.length) return;
+  const confirmed = await dialog({
+    title: `Apagar ${plural(list.length, "sugestão", "sugestões")}?`,
+    text: "Apaga os itens sugeridos em que ainda não mexeram. Os que já editaram ou marcaram como comprados ficam na lista.",
+    ok: "Apagar",
+    danger: true,
+  });
+  if (!confirmed) return;
+  try {
+    await Store.removeItems(list.map(it => it.id));
+    toast(plural(list.length, "sugestão apagada", "sugestões apagadas"), {
+      label: "Anular",
+      run: () => Store.insertItems(list).catch(err => toast(errMsg(err))),
+    });
   } catch (err) {
     toast(errMsg(err));
   }
@@ -1089,9 +1139,14 @@ function cycleTheme() {
 }
 
 function homeMenu() {
+  const suggestions = Store.items.filter(it => it.sugerido).length;
   const entries = [
     { icon: "download", label: "Exportar para Excel", run: exportExcel },
     { icon: "upload", label: "Importar de Excel", run: () => $("#fileImport").click() },
+    "-",
+    suggestions
+      ? { icon: "trash", label: `Apagar sugestões (${suggestions})`, danger: true, run: deleteSuggestions }
+      : { icon: "sparkles", label: "Adicionar sugestões", run: useSuggestions },
     "-",
     { icon: { auto: "contrast", light: "sun", dark: "moon" }[theme], label: `Tema: ${THEME_LABELS[theme]}`, run: cycleTheme },
   ];
