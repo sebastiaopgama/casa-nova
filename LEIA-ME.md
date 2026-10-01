@@ -65,14 +65,14 @@ só deixam entrar a conta partilhada.
   Qualquer outro registo A do `www` tem de ser apagado (um nome não pode ter A e CNAME ao mesmo tempo).
   Os registos MX/TXT de email ficam como estão.
 
-  Depois, no repositório: ficheiro `CNAME` na raiz com `mscasanova.pt` (ou **Settings > Pages > Custom domain**)
-  e, quando o certificado estiver pronto, **Enforce HTTPS**.
+  O repositório tem o ficheiro `CNAME` (com `mscasanova.pt`) e o GitHub Pages tem **Enforce HTTPS** ligado:
+  a app abre em **https://mscasanova.pt** e o `www` e o endereço do GitHub reencaminham para lá.
 
 > No plano Free, o Supabase **pausa o projeto ao fim de 7 dias sem uso**. Se a app ficar uma semana
 > sem ser aberta, entra no painel do Supabase e carrega em **Restore project** (os dados não se perdem).
 
 ## Instalar no iPhone
-1. Abre o endereço do site no **Safari**.
+1. Abre **https://mscasanova.pt** no **Safari**.
 2. Toca em **Partilhar** (o quadrado com a seta para cima) e depois em **Adicionar ao ecrã principal**.
 3. A Casa Nova fica com ícone próprio e abre em ecrã inteiro, sem as barras do Safari.
 4. Na primeira vez escreve a palavra-passe. O iPhone pode guardá-la no Porta-chaves.
